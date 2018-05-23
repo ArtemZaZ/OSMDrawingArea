@@ -25,10 +25,10 @@ im.paste(img, (0, 0))
 im.paste(img1, (722, 0))
 #im.show()
 
-tilex = lon2tilex(-1.225, 7)
-tiley = lat2tiley(51.744, 7)
-path = tile2path(tilex, tiley, 7)
-path2 = tile2path(tilex+1, tiley, 7)
+tilex = lon2tilex(-1.225, 2)
+tiley = lat2tiley(51.744, 2)
+path = tile2path(tilex, tiley, 2)
+path2 = tile2path(tilex+1, tiley, 2)
 
 print(path)
 response = requests.get(path, stream=True)
@@ -39,4 +39,6 @@ tilemap = Image.new("RGB", (512, 256))
 tilemap.paste(tile, (0, 0))
 tilemap.paste(tile2, (256, 0))
 tilemap.show()
+
+
 
