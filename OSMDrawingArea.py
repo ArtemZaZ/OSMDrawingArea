@@ -43,6 +43,26 @@ class OSMDrawingArea(Gtk.DrawingArea):
         #  ширина и высота
         self.screenLL[3] = self.tiley2lat(int(tiley) + int(scope[3]) + scope[3] % 1, self.zoom) - self.screenLL[1]
 
+        tempTilex = tilex - math.ceil(scope[0])
+        tempTiley = tiley - math.ceil(scope[2])
+        startDrawingCoords = [startDrawingCoords[0] - math.ceil(scope[0]) * self.tileSize[0], startDrawingCoords[1] - math.ceil(scope[2]) * self.tileSize[1]]
+
+        for i in range(math.ceil(scope[1]) + math.ceil(scope[3])):
+            for j in range(math.ceil(scope[0]) + math.ceil(scope[2])):
+                path = self.tile2path(tempTilex + i, tempTiley + j, self.zoom)
+                print(path)
+                response = requests.get(path, stream=True)
+                tile = Image.open(response.raw)
+                image.paste(tile, (int(startDrawingCoords[0] + i * self.tileSize[0]), int(startDrawingCoords[1] + j * self.tileSize[1])))
+        image.putalpha(255)
+        arr = numpy.array(image)
+        surface = cairo.ImageSurface.create_for_data(arr, cairo.FORMAT_RGB24, widgetAllocation.width, widgetAllocation.height)
+        pt = cairo.SurfacePattern(surface)
+        pt.set_extend(cairo.EXTEND_REPEAT)
+        cr.set_source(pt)
+        cr.rectangle(0, 0, widgetAllocation.width, widgetAllocation.height)
+        cr.fill()
+
 
 
         """
