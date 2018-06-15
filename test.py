@@ -21,23 +21,25 @@ im = Image.new("RGB", (1622, 1000))
 img = Image.open("ring.png")
 img1 = Image.open("kompas.png")
 
-im.paste(img, (0, 0))
+im.paste(img, (-200, 0))
 im.paste(img1, (722, 0))
-#im.show()
+im.show()
 
-tilex = lon2tilex(-1.225, 2)
-tiley = lat2tiley(51.744, 2)
-path = tile2path(tilex, tiley, 2)
-path2 = tile2path(tilex+1, tiley, 2)
+zoom = 19
+
+tilex = lon2tilex(147.30900, zoom)
+tiley = lat2tiley(-42.86892, zoom)
+path = tile2path(tilex, tiley, zoom)
+path2 = tile2path(tilex+1, tiley, zoom)
 
 print(path)
 response = requests.get(path, stream=True)
 tile = Image.open(response.raw)
 response = requests.get(path2, stream=True)
 tile2 = Image.open(response.raw)
-tilemap = Image.new("RGB", (512, 256))
+tilemap = Image.new("RGB", (256, 256))
 tilemap.paste(tile, (0, 0))
-tilemap.paste(tile2, (256, 0))
+#tilemap.paste(tile2, (256, 0))
 tilemap.show()
 
 
