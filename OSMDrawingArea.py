@@ -30,7 +30,7 @@ class OSMDrawingArea(Gtk.DrawingArea):
         self.tileMap = []   # массив отображаемых тайлов
         self.screenLL = [0, 0, 0, 0]  # параметры экрана в lon и lat
         self.center = [30.52060, 59.91541]  # координаты центра экрана
-        self.zoom = 18
+        self.zoom = 10
 
     def render(self, widget, cr):   # рендеринг
         widgetAllocation = self.get_allocation()     # получаем разрешение виджета
@@ -101,3 +101,5 @@ class OSMDrawingArea(Gtk.DrawingArea):
     def tile2path(self, tilex, tiley, zoom):    # координаты тайла в путь
         return "http://tile.openstreetmap.org/%d/%d/%d.png" % (zoom, tilex, tiley)
 
+    def setCenter(self, lon, lat):
+        self.center = [lon, lat]

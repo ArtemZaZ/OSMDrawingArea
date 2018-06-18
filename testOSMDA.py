@@ -2,14 +2,22 @@ import gi
 gi.require_version("Gtk", "3.0")
 import OSMDrawingArea
 from gi.repository import Gtk
+import LogParser
 
 
 def draw(self, widget, cr, screenLL):
+    allocation = self.get_allocation()
+    self.setCenter(30.342022, 59.864629)
     cr.set_source_rgb(0, 0, 0)
-    cr.set_line_width(3)
-    cr.move_to(0, 0)
-    cr.line_to(100, 100)
-    cr.stroke()
+    cr.set_line_width(2)
+    print(screenLL)
+    print(screenLL[0] - LogParser.LatLon[0][1], screenLL[1] - LogParser.LatLon[0][0])
+    print((screenLL[0] - LogParser.LatLon[0][1])/screenLL[2], (screenLL[1] - LogParser.LatLon[0][0])/screenLL[3])
+    cr.move_to(int(allocation.width*(screenLL[0] - LogParser.LatLon[0][1])/screenLL[2]), int(allocation.height*(screenLL[1] - LogParser.LatLon[0][0])/screenLL[3]))
+    for i in LogParser.LatLon[1:]:
+        print(i[1], i[0])
+        cr.line_to(int(allocation.width*(screenLL[0] - i[1])/screenLL[2]), int(allocation.height*(screenLL[1] - i[0])/screenLL[3]))
+        cr.stroke()
     print(111)
 
 
