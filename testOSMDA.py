@@ -3,6 +3,16 @@ gi.require_version("Gtk", "3.0")
 import OSMDrawingArea
 from gi.repository import Gtk
 
+
+def draw(self, widget, cr, screenLL):
+    cr.set_source_rgb(0, 0, 0)
+    cr.set_line_width(3)
+    cr.move_to(0, 0)
+    cr.line_to(100, 100)
+    cr.stroke()
+    print(111)
+
+
 class Pult:
     def __init__(self):
         self.builder = Gtk.Builder()
@@ -12,7 +22,7 @@ class Pult:
         self.box = self.builder.get_object("box2")  # бокс под виджет
         self.window.connect("delete-event", self.delete_event)
 
-        self.OSMDA = OSMDrawingArea.OSMDrawingArea(resolution=[640, 480])  # виджет
+        self.OSMDA = OSMDrawingArea.OSMDrawingArea(resolution=[640, 480], drawcallback=draw)  # виджет
         self.box.pack_start(self.OSMDA, True, True, 0)
         self.window.show_all()
         Gtk.main()

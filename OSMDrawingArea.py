@@ -12,10 +12,15 @@ tile and lon/lat convertation: https://wiki.openstreetmap.org/wiki/Slippy_map_ti
 """
 
 
+def defaultDraw(self, widget, cr, screenLL):
+    pass
+
+
 class OSMDrawingArea(Gtk.DrawingArea):
-    def __init__(self, resolution=[640, 480]):
+    def __init__(self, resolution=[640, 480], drawcallback=defaultDraw):
         Gtk.DrawingArea.__init__(self)
         self.resolution = resolution    # начальное разрешение
+        self.drawCallBack = drawcallback
 
         self.connect("draw", self.render)   # привязка отрисовки
         self.connect("unrealize", self.doUnrealize)  # привязка освобождения ресурсов
@@ -24,7 +29,7 @@ class OSMDrawingArea(Gtk.DrawingArea):
         self.tileSize = [256, 256]
         self.tileMap = []   # массив отображаемых тайлов
         self.screenLL = [0, 0, 0, 0]  # параметры экрана в lon и lat
-        self.center = [37.612, 37.612]  # координаты центра экрана
+        self.center = [30.52060, 59.91541]  # координаты центра экрана
         self.zoom = 18
 
     def render(self, widget, cr):   # рендеринг
@@ -41,19 +46,21 @@ class OSMDrawingArea(Gtk.DrawingArea):
         self.screenLL[1] = self.tiley2lat(int(tiley) - int(scope[2]) + scope[2] % 1, self.zoom)
         self.screenLL[2] = self.tilex2lon(int(tilex) + int(scope[1]) + scope[1] % 1, self.zoom) - self.screenLL[0]  #
         #  ширина и высота
-        self.screenLL[3] = self.tiley2lat(int(tiley) + int(scope[3]) + scope[3] % 1, self.zoom) - self.screenLL[1]
+        self.screenLL[3] = -(self.tiley2lat(int(tiley) + int(scope[3]) + scope[3] % 1, self.zoom) - self.screenLL[1])
 
         tempTilex = tilex - math.ceil(scope[0])
         tempTiley = tiley - math.ceil(scope[2])
         startDrawingCoords = [startDrawingCoords[0] - math.ceil(scope[0]) * self.tileSize[0], startDrawingCoords[1] - math.ceil(scope[2]) * self.tileSize[1]]
 
-        for i in range(math.ceil(scope[1]) + math.ceil(scope[3])):
-            for j in range(math.ceil(scope[0]) + math.ceil(scope[2])):
-                path = self.tile2path(tempTilex + i, tempTiley + j, self.zoom)
+        print(self.screenLL)
+
+        for i in range(math.ceil(scope[0]) + math.ceil(scope[2]) + 1):
+            for j in range(math.ceil(scope[1]) + math.ceil(scope[3])):
+                path = self.tile2path(tempTilex + j, tempTiley + i, self.zoom)
                 print(path)
                 response = requests.get(path, stream=True)
                 tile = Image.open(response.raw)
-                image.paste(tile, (int(startDrawingCoords[0] + i * self.tileSize[0]), int(startDrawingCoords[1] + j * self.tileSize[1])))
+                image.paste(tile, (int(startDrawingCoords[0] + j * self.tileSize[0]), int(startDrawingCoords[1] + i * self.tileSize[1])))
         image.putalpha(255)
         arr = numpy.array(image)
         surface = cairo.ImageSurface.create_for_data(arr, cairo.FORMAT_RGB24, widgetAllocation.width, widgetAllocation.height)
@@ -62,44 +69,12 @@ class OSMDrawingArea(Gtk.DrawingArea):
         cr.set_source(pt)
         cr.rectangle(0, 0, widgetAllocation.width, widgetAllocation.height)
         cr.fill()
-
-
-
-        """
-        widgetAlloc = self.get_allocation()     # получаем разрешение виджета
-        
-        tempWidth = widgetAlloc.width
-        tempHeight = widgetAlloc.height
-        temp = tempWidth
-        tilex = self.lon2tilex(self.centerLon, self.zoom)
-        tiley = self.lat2tiley(self.centerLat, self.zoom)
-        i = 0
-        j = 0
-        while tempHeight > 0:
-            tempWidth = temp
-            i = 0
-            while tempWidth > 0:
-                path = self.tile2path(tilex + i, tiley + j, self.zoom)
-                print(path)
-                response = requests.get(path, stream=True)
-                tile = Image.open(response.raw)
-                image.paste(tile, (i*self.tileSizeX, j*self.tileSizeY))
-                tempWidth -= self.tileSizeX
-                print(i)
-                i = i + 1
-            j = j + 1
-            tempHeight -= self.tileSizeY
-        image.putalpha(255)
-        arr = numpy.array(image)
-        surface = cairo.ImageSurface.create_for_data(arr, cairo.FORMAT_RGB24, widgetAlloc.width, widgetAlloc.height)
-        pt = cairo.SurfacePattern(surface)
-        pt.set_extend(cairo.EXTEND_REPEAT)
-        cr.set_source(pt)
-        cr.rectangle(0, 0, widgetAlloc.width, widgetAlloc.height)
-        cr.fill()
-        """
+        self.drawCallBack(self, widget, cr, self.screenLL)
 
     def doUnrealize(self, arg):     # освобождение ресурсов
+        pass
+
+    def drawCallBack(self, widget, cr, screenLL):
         pass
 
     def delimitation(self, wa, sd, ts):     # определение границ отрисовываемой карты в тайлах по размерам экрана,
@@ -125,5 +100,4 @@ class OSMDrawingArea(Gtk.DrawingArea):
 
     def tile2path(self, tilex, tiley, zoom):    # координаты тайла в путь
         return "http://tile.openstreetmap.org/%d/%d/%d.png" % (zoom, tilex, tiley)
-
 
